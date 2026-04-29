@@ -13,7 +13,7 @@ ACCESS_TOKEN = "EAASUUYZA3W40BRRav5vRlvKeGMq4hNyh8ZCM0Bg6M10u4UK9k5JbnXDPBiIRzYL
 # ==================================================
 # NÚMERO DE PRUEBA (solo el tuyo por ahora)
 # ==================================================
-VECINOS = ["5492634613018"]
+VECINOS = ["542634613018"]
 
 # ==================================================
 HTML = """
