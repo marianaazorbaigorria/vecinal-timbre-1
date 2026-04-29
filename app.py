@@ -5,12 +5,11 @@ import os
 app = Flask(__name__)
 
 PHONE_NUMBER_ID = "1129592466895716"
-ACCESS_TOKEN = "ACCESS_TOKEN = "EAASUUYZA3W40BRRav5vRlvKeGMq4hNyh8ZCM0Bg6M10u4UK9k5JbnXDPBiIRzYLSkZCQlMBYq0jxbfDhP9WZAKugOi6tWpEQVtoc0H4hfJvzZBWZB2NWtLyzRScoYkKiIJZBO2H9qZA6H2ZAnWTdUQi6GkZAFzU0TDrjgjOjbQpU0vnPkwTLY7WVp5en7B0FTV9F4nDdFLWZAEzdmNWy000LzDKZC9CZA3vyOM2QaBwOqp3IGqDepqUoMAyD4bZAnoeCXAPvfRCYNYFOzH1ZATSmyttQQZDZD"
-print(f"TOKEN CARGADO: {ACCESS_TOKEN[:30]}...")  # <-- AGREGÁ ESTA LÍNEA
+ACCESS_TOKEN = "EAASUUYZA3W40BRRav5vRlvKeGMq4hNyh8ZCM0Bg6M10u4UK9k5JbnXDPBiIRzYLSkZCQlMBYq0jxbfDhP9WZAKugOi6tWpEQVtoc0H4hfJvzZBWZB2NWtLyzRScoYkKiIJZBO2H9qZA6H2ZAnWTdUQi6GkZAFzU0TDrjgjOjbQpU0vnPkwTLY7WVp5en7B0FTV9F4nDdFLWZAEzdmNWy000LzDKZC9CZA3vyOM2QaBwOqp3IGqDepqUoMAyD4bZAnoeCXAPvfRCYNYFOzH1ZATSmyttQQZDZD"
+
 VECINOS = ["5492634613018"]
 
-HTML = """
-<!DOCTYPE html>
+HTML = """<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -64,25 +63,19 @@ HTML = """
             const estado = document.getElementById('estado');
             btn.disabled = true;
             estado.style.display = 'block';
-            estado.style.background = '#FFF3CD';
-            estado.style.color = '#856404';
             estado.textContent = 'Enviando...';
             try {
                 const r = await fetch('/timbre');
                 const d = await r.json();
                 estado.textContent = d.mensaje;
-                estado.style.background = r.ok ? '#D4EDDA' : '#F8D7DA';
-                estado.style.color = r.ok ? '#155724' : '#721C24';
             } catch(e) {
                 estado.textContent = 'Error';
-                estado.style.background = '#F8D7DA';
             }
             setTimeout(() => { btn.disabled = false; }, 3000);
         };
     </script>
 </body>
-</html>
-"""
+</html>"""
 
 @app.route('/')
 def index():
@@ -92,25 +85,16 @@ def index():
 def timbre():
     url = f"https://graph.facebook.com/v21.0/{PHONE_NUMBER_ID}/messages"
     headers = {"Authorization": f"Bearer {ACCESS_TOKEN}", "Content-Type": "application/json"}
-    mensaje = "🔔 AVISO: Alguien está en la puerta"
-    exitosos = 0
-    errores = []
-    for numero in VECINOS:
-        data = {"messaging_product": "whatsapp", "to": numero, "type": "text", "text": {"body": mensaje}}
-        try:
-            r = requests.post(url, headers=headers, json=data, timeout=10)
-            if r.status_code == 200:
-                exitosos += 1
-            else:
-                errores.append(f"{numero}: {r.status_code} - {r.text}")
-        except Exception as e:
-            errores.append(f"{numero}: Excepción - {str(e)}")
-    
-    if errores:
-        # Devolvemos el primer error para que se muestre en la pantalla
-        return {"mensaje": f"❌ Error: {errores[0][:100]}"}, 500
-    else:
-        return {"mensaje": f"✅ Enviado a {exitosos}"}
+    data = {"messaging_product": "whatsapp", "to": "5492634613018", "type": "text", "text": {"body": "🔔 AVISO: Alguien esta en la puerta"}}
+    try:
+        r = requests.post(url, headers=headers, json=data, timeout=5)
+        if r.status_code == 200:
+            return {"mensaje": "✅ Enviado"}
+        else:
+            return {"mensaje": f"❌ Error: {r.text[:100]}"}, 500
+    except Exception as e:
+        return {"mensaje": f"❌ Error: {str(e)}"}, 500
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
