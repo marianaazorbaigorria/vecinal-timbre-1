@@ -4,18 +4,11 @@ import os
 
 app = Flask(__name__)
 
-# ==================================================
-# DATOS DE META (verificá que sean correctos)
-# ==================================================
 PHONE_NUMBER_ID = "1129592466895716"
 ACCESS_TOKEN = "EAASUUYZA3W40BRRav5vRlvKeGMq4hNyh8ZCM0Bg6M10u4UK9k5JbnXDPBiIRzYLSkZCQlMBYq0jxbfDhP9WZAKugOi6tWpEQVtoc0H4hfJvzZBWZB2NWtLyzRScoYkKiIJZBO2H9qZA6H2ZAnWTdUQi6GkZAFzU0TDrjgjOjbQpU0vnPkwTLY7WVp5en7B0FTV9F4nDdFLWZAEzdmNWy000LzDKZC9CZA3vyOM2QaBwOqp3IGqDepqUoMAyD4bZAnoeCXAPvfRCYNYFOzH1ZATSmyttQQZDZD"
 
-# ==================================================
-# NÚMERO DE PRUEBA (solo el tuyo por ahora)
-# ==================================================
-VECINOS = ["542634613018"]
+VECINOS = ["5426152634613018"]  # Tu número en formato 15
 
-# ==================================================
 HTML = """
 <!DOCTYPE html>
 <html>
@@ -41,10 +34,8 @@ HTML = """
             text-align: center;
             max-width: 450px;
             width: 100%;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
         }
         h1 { color: #075E54; font-size: 32px; margin-bottom: 16px; }
-        .sub { color: #666; font-size: 16px; margin-bottom: 30px; }
         button {
             background-color: #25D366;
             color: white;
@@ -55,70 +46,39 @@ HTML = """
             border-radius: 80px;
             width: 100%;
             cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 10px 25px -5px rgba(37,211,102,0.4);
+            margin-top: 20px;
         }
         button:active { transform: scale(0.97); }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
-        .mensaje {
-            margin-top: 30px;
-            padding: 15px;
-            border-radius: 24px;
-            font-size: 15px;
-            display: none;
-        }
-        .footer { margin-top: 35px; color: #999; font-size: 12px; }
+        .mensaje { margin-top: 20px; display: none; padding: 10px; border-radius: 20px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🔔 ¿ALGUIEN EN LA PUERTA?</h1>
-        <div class="sub">Presiona el botón para avisar a los vecinos</div>
-        <button id="botonAvisar">📢 DAR AVISO</button>
+        <button id="btn">📢 DAR AVISO</button>
         <div id="estado" class="mensaje"></div>
-        <div class="footer">Los vecinos recibirán el aviso en WhatsApp</div>
     </div>
-
     <script>
-        const boton = document.getElementById('botonAvisar');
-        const estadoDiv = document.getElementById('estado');
-
-        async function enviarAviso() {
-            boton.disabled = true;
-            estadoDiv.style.display = 'block';
-            estadoDiv.style.background = '#FFF3CD';
-            estadoDiv.style.color = '#856404';
-            estadoDiv.textContent = '📡 Enviando aviso...';
-
+        document.getElementById('btn').onclick = async () => {
+            const btn = document.getElementById('btn');
+            const estado = document.getElementById('estado');
+            btn.disabled = true;
+            estado.style.display = 'block';
+            estado.style.background = '#FFF3CD';
+            estado.style.color = '#856404';
+            estado.textContent = 'Enviando...';
             try {
-                const respuesta = await fetch('/timbre', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                const datos = await respuesta.json();
-
-                if (respuesta.ok) {
-                    estadoDiv.style.background = '#D4EDDA';
-                    estadoDiv.style.color = '#155724';
-                    estadoDiv.textContent = datos.mensaje;
-                } else {
-                    estadoDiv.style.background = '#F8D7DA';
-                    estadoDiv.style.color = '#721C24';
-                    estadoDiv.textContent = '❌ ' + datos.mensaje;
-                }
-            } catch (error) {
-                estadoDiv.style.background = '#F8D7DA';
-                estadoDiv.style.color = '#721C24';
-                estadoDiv.textContent = '❌ Error de conexión';
+                const r = await fetch('/timbre');
+                const d = await r.json();
+                estado.textContent = d.mensaje;
+                estado.style.background = r.ok ? '#D4EDDA' : '#F8D7DA';
+                estado.style.color = r.ok ? '#155724' : '#721C24';
+            } catch(e) {
+                estado.textContent = 'Error';
+                estado.style.background = '#F8D7DA';
             }
-
-            setTimeout(() => {
-                boton.disabled = false;
-                setTimeout(() => { estadoDiv.style.display = 'none'; }, 3000);
-            }, 3000);
-        }
-
-        boton.addEventListener('click', enviarAviso);
+            setTimeout(() => { btn.disabled = false; }, 3000);
+        };
     </script>
 </body>
 </html>
@@ -131,32 +91,18 @@ def index():
 @app.route('/timbre', methods=['POST'])
 def timbre():
     url = f"https://graph.facebook.com/v21.0/{PHONE_NUMBER_ID}/messages"
-    headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    
-    # Usar la plantilla hello_world (como hace el probador de Meta)
-    data = {
-        "messaging_product": "whatsapp",
-        "to": "5492634613018",
-        "type": "template",
-        "template": {
-            "name": "hello_world",
-            "language": {
-                "code": "en_US"
-            }
-        }
-    }
-    
-    try:
-        respuesta = requests.post(url, headers=headers, json=data, timeout=10)
-        if respuesta.status_code == 200:
-            return {"mensaje": "✅ Aviso enviado (Hello World)"}
-        else:
-            return {"mensaje": f"❌ Error: {respuesta.text[:200]}"}, 500
-    except Exception as e:
-        return {"mensaje": f"❌ Error: {str(e)}"}, 500
+    headers = {"Authorization": f"Bearer {ACCESS_TOKEN}", "Content-Type": "application/json"}
+    mensaje = "🔔 AVISO: Alguien está en la puerta"
+    exitosos = 0
+    for numero in VECINOS:
+        data = {"messaging_product": "whatsapp", "to": numero, "type": "text", "text": {"body": mensaje}}
+        try:
+            r = requests.post(url, headers=headers, json=data, timeout=5)
+            if r.status_code == 200:
+                exitosos += 1
+        except:
+            pass
+    return {"mensaje": f"✅ Enviado a {exitosos}"}
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
