@@ -94,16 +94,23 @@ def timbre():
     headers = {"Authorization": f"Bearer {ACCESS_TOKEN}", "Content-Type": "application/json"}
     mensaje = "🔔 AVISO: Alguien está en la puerta"
     exitosos = 0
+    errores = []
     for numero in VECINOS:
         data = {"messaging_product": "whatsapp", "to": numero, "type": "text", "text": {"body": mensaje}}
         try:
-            r = requests.post(url, headers=headers, json=data, timeout=5)
+            r = requests.post(url, headers=headers, json=data, timeout=10)
             if r.status_code == 200:
                 exitosos += 1
-        except:
-            pass
-    return {"mensaje": f"✅ Enviado a {exitosos}"}
-
+            else:
+                errores.append(f"{numero}: {r.status_code} - {r.text}")
+        except Exception as e:
+            errores.append(f"{numero}: Excepción - {str(e)}")
+    
+    if errores:
+        # Devolvemos el primer error para que se muestre en la pantalla
+        return {"mensaje": f"❌ Error: {errores[0][:100]}"}, 500
+    else:
+        return {"mensaje": f"✅ Enviado a {exitosos}"}
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
