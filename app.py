@@ -4,11 +4,20 @@ import os
 
 app = Flask(__name__)
 
+# ==================================================
+# DATOS ACTUALIZADOS
+# ==================================================
 PHONE_NUMBER_ID = "1129592466895716"
 ACCESS_TOKEN = "EAASUUYZA3W40BRVvqvEDhukZCdP2RRqZBxZAnx5VM14aU0XKBHQRNkY8EjfvohY2SBkqZBVBeBJWZBuTmlZBfRD50gXn0sa8aibfwHwJ7aOV3tsSZCrefcAETZCVZBySn7baOrVwcZAOss3qtyR6jZB2GElkP0MZBS79h8pHm3XefrzVCM71xqqby40zMHvZC4CHaBymwWyn3q24OCGH1mZB6pQJbDUV0rXZBf2ZB35o2oVofVtakQZCl6oLB5fzZBB47b0A9ygzQMvaGJDbL6spxLJ7KIyIwZDZD"
 
-VECINOS = ["542617616765"]  # Tu número en formato 15
+# ==================================================
+# LISTA DE VECINOS (con el nuevo número como destinatario de prueba)
+# ==================================================
+VECINOS = [
+    "5492617616765",  # Tu nuevo número (el que está en "Para" en Meta)
+]
 
+# ==================================================
 HTML = """
 <!DOCTYPE html>
 <html>
@@ -88,7 +97,7 @@ HTML = """
 def index():
     return render_template_string(HTML)
 
-@app.route('/timbre', methods=['POST'])
+@app.route('/timbre')
 def timbre():
     url = f"https://graph.facebook.com/v21.0/{PHONE_NUMBER_ID}/messages"
     headers = {"Authorization": f"Bearer {ACCESS_TOKEN}", "Content-Type": "application/json"}
